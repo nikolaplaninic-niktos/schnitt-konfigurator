@@ -10,8 +10,15 @@ Externe Bibliotheken kommen per CDN: jsPDF 2.5.1 (jsDelivr), pdf.js 3.11.174 (cd
 
 Online stellen: GitHub Pages (Settings → Pages → Branch `main`, Ordner `/`) oder beliebiger statischer Webspace.
 
+## Datenbank (Supabase, Organisation „SJ Test")
+- Projekt `xyiwfjvqujfntxxvmocc` (eu-west-1). Schema: `supabase/migrations/`.
+- Tabellen: `projekte` (Projektdaten als JSON + Spalten Name/Auftragsnr./Kunde), `positionen` (eine Zeile je Position, JSON + Spalten Stück/Breite/Höhe/Aufteilung), `bibliothek` (eigene Schienen und Produkte).
+- Zugriff nur für angemeldete Nutzer (Row Level Security); alle Angemeldeten sehen dieselben Projekte (Team).
+- In der App oben anmelden oder registrieren. Änderungen werden nach ca. 1 s automatisch gespeichert; „Neu laden" holt den Stand der anderen.
+- Ohne Anmeldung arbeitet die App wie bisher nur im Browser (`localStorage`).
+- Gleichzeitiges Bearbeiten derselben Position: der zuletzt gespeicherte Stand gilt.
+
 ## Hinweise
-- Daten bleiben im Browser (eigene Führungsschienen in `localStorage`, Projekte über JSON-Export sichern).
 - „Zeichnung einlesen" (Beta) funktioniert nur, wenn die Seite als Claude Artifact geöffnet ist;
   in dieser Standalone-Version ist der Bereich deaktiviert.
 - PDFs werden außerhalb von Claude direkt im Browser heruntergeladen.
