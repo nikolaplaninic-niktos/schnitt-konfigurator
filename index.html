@@ -68,6 +68,8 @@ form{display:flex;flex-direction:column}
   background:linear-gradient(160deg,rgba(14,30,44,.9),rgba(8,16,24,.96)),linear-gradient(90deg,rgba(74,157,191,.09) 1px,transparent 1px) 0 0/48px 48px,linear-gradient(0deg,rgba(74,157,191,.09) 1px,transparent 1px) 0 0/48px 48px,#0B1620;
   clip-path:inset(0 100% 0 0);transition:clip-path 1s cubic-bezier(.77,0,.18,1)}
 .auth.in .authart{clip-path:inset(0 0 0 0)}
+.authart{animation:aaGrid 24s linear infinite}
+@keyframes aaGrid{to{background-position:0 0,48px 48px,48px 48px}}
 .authart::after{content:"";position:absolute;inset:auto -20% -40% auto;width:70%;aspect-ratio:1;background:radial-gradient(circle,rgba(74,157,191,.28),transparent 65%);animation:aaGlow 9s ease-in-out infinite alternate;pointer-events:none}
 @keyframes aaGlow{to{transform:translate(-18%,-14%) scale(1.15)}}
 .aa-top{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
@@ -142,10 +144,14 @@ form{display:flex;flex-direction:column}
 .auth.out .authcard{transform:translateX(24px);opacity:0;transition:transform .45s ease,opacity .35s ease}
 @media (max-width:860px){
   .auth{grid-template-columns:1fr;grid-template-rows:auto 1fr}
-  .authart{padding:22px 20px 26px;gap:18px;clip-path:inset(0 0 100% 0)}
-  .auth.in .authart{clip-path:inset(0 0 0 0)}
-  .aa-mid{grid-template-columns:auto minmax(0,1fr);gap:20px}
-  .aa-win{width:72px}
+  .authart{padding:22px 20px 28px;gap:20px;clip-path:none;transform:translateY(-100%);transition:transform .8s cubic-bezier(.77,0,.18,1)}
+  .auth.in .authart{transform:none}
+  .auth.out .authart{clip-path:none;transform:translateY(-100%)}
+  .authart::after{inset:-60% -30% auto auto;width:90%}
+  .aa-mid{grid-template-columns:auto minmax(0,1fr);gap:22px}
+  .aa-win{width:96px}
+  .aa-win .ln{stroke-width:3}.aa-win .ln.sj{stroke-width:4}
+  .aa-top{opacity:0}.auth.in .aa-top{animation:aaRise .6s ease forwards .35s}
   .aa-win .tx,.aa-win .dim{display:none}
   .aa-h{font-size:26px}.aa-sub,.aa-foot{display:none}.aa-eye{margin-bottom:8px}
   .authcard{justify-content:flex-start;padding:28px 20px 24px;max-width:520px}
