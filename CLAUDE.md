@@ -37,8 +37,12 @@ Test project for Nikola Planinic and a friend: how a shared database works for t
 - Check: wrong password + wrong code message, enroll → 2nd context asks code, non-member gets "Kein Zugriff", login → "Datenbank: verbunden", edit → saved, second browser context sees the data, 390 px without horizontal overflow, no console errors.
 
 ## Status (17.11.2026)
-- Allowlist + mandatory authenticator (2FA) live. `mitglieder`: Nikola only so far – friend's email still to add.
-- GitHub Pages: repo is **private** → Pages needs public repo (or GitHub Pro). Nikola enables it in Settings → Pages (branch `main`, `/`);
-  URL then `https://nikolaplaninic-niktos.github.io/schnitt-konfigurator/`. Set Supabase Auth → URL Configuration → Site URL to it.
+- Repo is **public**, GitHub Pages live from `main` / root: https://nikolaplaninic-niktos.github.io/schnitt-konfigurator/
+  (deploys automatically on every push; `.nojekyll` present).
+- Supabase Auth Site URL set to the Pages URL by Nikola.
+- Allowlist + mandatory authenticator (2FA) live. Nikola registered, email confirmed, TOTP verified, member. Friend's email still to add to `mitglieder`.
+- Next: own subdomain on Nikola's Niktos domain (DNS at Hostinger), e.g. `konfigurator.<niktos-domain>`:
+  Hostinger DNS CNAME → `nikolaplaninic-niktos.github.io`, GitHub Pages custom domain (+ `CNAME` file in repo), Enforce HTTPS,
+  then Supabase Site URL + Redirect URLs to the new address.
 - Open ideas: Supabase Realtime instead of "Neu laden", password reset ("Passwort vergessen"),
   disable "Confirm email" if the built-in mail limit blocks sign-ups.
