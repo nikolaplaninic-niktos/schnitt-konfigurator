@@ -8,7 +8,8 @@ Export als PDF (einzelne Position, Projekt-Statik, Projekt komplett), Projekt si
 Eine einzige Datei: `index.html` im Browser öffnen – keine Installation, kein Build.
 Externe Bibliotheken kommen per CDN: jsPDF 2.5.1 (jsDelivr), pdf.js 3.11.174 (cdnjs), Schrift IBM Plex (Google Fonts).
 
-Online stellen: GitHub Pages (Settings → Pages → Branch `main`, Ordner `/`) oder beliebiger statischer Webspace.
+Online: **https://konfigurator.niktos.com/** – GitHub Pages (Branch `main`, Ordner `/`), eigene Subdomain über die Datei `CNAME`
+(DNS bei Hostinger: CNAME `konfigurator` → `nikolaplaninic-niktos.github.io`). Jeder Push auf `main` wird automatisch veröffentlicht.
 
 ## Datenbank (Supabase, Organisation „SJ Test")
 - Projekt `xyiwfjvqujfntxxvmocc` (eu-west-1). Schema: `supabase/migrations/`.
