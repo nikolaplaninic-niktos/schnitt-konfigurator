@@ -54,10 +54,28 @@ form{display:flex;flex-direction:column}
 .cloud .st{display:flex;align-items:center;gap:8px;font-weight:600}
 .cloud .dot{width:9px;height:9px;border-radius:50%;background:var(--muted)}
 .cloud[data-s="ok"] .dot{background:var(--ok)}.cloud[data-s="busy"] .dot{background:var(--warn)}.cloud[data-s="err"] .dot{background:var(--bad)}
-.cloud form{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1;justify-content:flex-end}
-.cloud input{width:200px;max-width:100%}
-.cloud .who{color:var(--muted);flex:1;text-align:right}
+.cloud .who{color:var(--muted);flex:1;text-align:right;overflow-wrap:anywhere}
+.cloud .cb{display:flex;gap:6px;margin-left:auto}
 .cloud .cm{flex-basis:100%;color:var(--muted);font-size:12px;margin:0}
+.auth{position:fixed;inset:0;z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.authcard{width:100%;max-width:380px;padding:22px 22px 14px;display:flex;flex-direction:column;gap:14px;box-shadow:0 12px 40px rgba(0,0,0,.18);margin:auto}
+.authhd{display:flex;gap:12px;align-items:center}
+.authhd .logo{flex:none;width:40px;height:40px;border-radius:8px;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-weight:600;font-family:var(--mono)}
+.authhd h2{margin:0;font-size:17px;font-weight:600}.authhd p{margin:0;color:var(--muted);font-size:12px}
+.astep{display:flex;flex-direction:column;gap:12px}
+.astep label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
+.astep input{font:400 15px var(--sans);padding:9px 10px;border:1px solid var(--line);border-radius:4px;background:var(--paper);color:var(--fg);width:100%}
+.astep input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.astep input.code{font:500 22px var(--mono);letter-spacing:.3em;text-align:center}
+button.wide{width:100%;padding:10px 12px;font-size:14px}
+.ahelp{margin:0;padding-left:18px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:3px}
+.ahint{margin:0;color:var(--muted);font-size:13px}.ahint.small{font-size:12px}
+.qr{display:flex;justify-content:center}.qr img{background:#fff;padding:8px;border-radius:6px;border:1px solid var(--line)}
+.key{margin:0;font-size:12px;color:var(--muted);text-align:center}.key code{font-family:var(--mono);color:var(--fg);overflow-wrap:anywhere;user-select:all}
+.amsg{margin:0;font-size:13px;color:var(--muted)}.amsg:empty{display:none}.amsg[data-s="err"]{color:var(--bad)}.amsg[data-s="ok"]{color:var(--ok)}
+.aft{display:flex;flex-direction:column;align-items:center;gap:2px;border-top:1px solid var(--line);padding-top:8px}
+button.link{border:0;background:none;color:var(--accent);padding:4px;font-size:12px}
+button.link:hover{text-decoration:underline}
 .cloud .cm:empty{display:none}
 .prjbar{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--bg)}
 .prjbar .pr{display:grid;grid-template-columns:62px minmax(0,1fr);gap:6px;align-items:center}
@@ -175,14 +193,52 @@ footer{color:var(--muted);font-size:12px}
 
   <div class="panel cloud" id="cloud" data-s="off">
     <span class="st"><span class="dot"></span><span id="cloudSt">Datenbank: nicht angemeldet</span></span>
-    <form id="cloudIn" autocomplete="on">
-      <input type="email" id="cloudMail" placeholder="E-Mail" autocomplete="username" required aria-label="E-Mail">
-      <input type="password" id="cloudPw" placeholder="Passwort" autocomplete="current-password" required minlength="6" aria-label="Passwort">
-      <button type="submit" class="pri">Anmelden</button><button type="button" id="cloudReg">Registrieren</button>
-    </form>
     <span class="who" id="cloudWho" hidden></span>
-    <span id="cloudOut" hidden><button type="button" id="cloudLoad">Neu laden</button> <button type="button" id="cloudLogout">Abmelden</button></span>
+    <span class="cb"><button type="button" id="cloudOpen" class="pri">Anmelden</button><span id="cloudOut" hidden><button type="button" id="cloudLoad">Neu laden</button> <button type="button" id="cloudLogout">Abmelden</button></span></span>
     <p class="cm" id="cloudMsg"></p>
+  </div>
+
+  <div class="auth" id="auth" hidden role="dialog" aria-modal="true" aria-labelledby="authH">
+    <div class="authcard panel">
+      <div class="authhd"><span class="logo" aria-hidden="true">PM</span><div><h2 id="authH">Anmeldung</h2><p id="authSub">Projekt &amp; Montagestatik · Team-Datenbank</p></div></div>
+
+      <form id="aLogin" class="astep" autocomplete="on">
+        <label>E-Mail<input type="email" id="cloudMail" autocomplete="username" required></label>
+        <label>Passwort<input type="password" id="cloudPw" autocomplete="current-password" required minlength="8"></label>
+        <button type="submit" class="pri wide">Anmelden</button>
+        <button type="button" id="cloudReg" class="wide">Neues Konto registrieren</button>
+      </form>
+
+      <form id="aEnroll" class="astep" hidden autocomplete="off">
+        <ol class="ahelp">
+          <li>Authenticator-App öffnen (z.&nbsp;B. Google Authenticator, Microsoft Authenticator, 1Password).</li>
+          <li>QR-Code scannen oder den Schlüssel manuell eingeben.</li>
+          <li>Den 6-stelligen Code aus der App hier eintragen.</li>
+        </ol>
+        <div class="qr"><img id="aQr" alt="QR-Code für die Authenticator-App" width="180" height="180"></div>
+        <p class="key">Schlüssel: <code id="aSecret"></code></p>
+        <label>Code aus der App<input id="aEnrollCode" class="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="123456"></label>
+        <button type="submit" class="pri wide">Authenticator aktivieren</button>
+      </form>
+
+      <form id="aMfa" class="astep" hidden autocomplete="off">
+        <p class="ahint">Bitte den aktuellen 6-stelligen Code aus Ihrer Authenticator-App eingeben.</p>
+        <label>Code<input id="aMfaCode" class="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="123456"></label>
+        <button type="submit" class="pri wide">Bestätigen</button>
+        <p class="ahint small">Handy verloren? Der Administrator kann den Authenticator zurücksetzen.</p>
+      </form>
+
+      <div id="aDenied" class="astep" hidden>
+        <p class="ahint">Ihr Konto <b id="aDeniedMail"></b> ist angemeldet, aber noch nicht für die Team-Datenbank freigeschaltet. Bitte beim Administrator melden.</p>
+        <button type="button" id="aRetry" class="pri wide">Erneut prüfen</button>
+      </div>
+
+      <p class="amsg" id="authMsg" role="status"></p>
+      <div class="aft">
+        <button type="button" id="aOther" class="link" hidden>Mit anderem Konto anmelden</button>
+        <button type="button" id="aSkip" class="link">Ohne Anmeldung weiter (nur in diesem Browser)</button>
+      </div>
+    </div>
   </div>
 
   <div class="grid">
@@ -2513,26 +2569,83 @@ async function cloudLoad(){
 }
 function cloudUser(u){
   SBU = u || null;
-  $('cloudIn').hidden = !!SBU; $('cloudWho').hidden = !SBU; $('cloudOut').hidden = !SBU;
+  $('cloudOpen').hidden = !!SBU; $('cloudWho').hidden = !SBU; $('cloudOut').hidden = !SBU;
   if (SBU) { $('cloudWho').textContent = SBU.email; cloudLoad(); }
   else { cloudReady = false; cloudSt('Datenbank: nicht angemeldet', 'off', 'Ohne Anmeldung wird nur in diesem Browser gespeichert.'); }
 }
+// ---- Anmeldemaske: E-Mail + Passwort, danach Authenticator (TOTP, aal2); Zugriff nur für freigeschaltete Mitglieder
+let authFactor = null, authKey = null, authBusy = false;
+function authMsg(t, st){ $('authMsg').textContent = t || ''; $('authMsg').dataset.s = st || ''; }
+function authShow(step, sub){
+  $('auth').hidden = !step; document.body.style.overflow = step ? 'hidden' : '';
+  if (!step) return;
+  for (const id of ['aLogin', 'aEnroll', 'aMfa', 'aDenied']) $(id).hidden = id !== step;
+  $('authH').textContent = {aLogin: 'Anmeldung', aEnroll: 'Authenticator einrichten', aMfa: 'Zwei-Faktor-Bestätigung', aDenied: 'Kein Zugriff'}[step];
+  $('authSub').textContent = sub || 'Projekt & Montagestatik · Team-Datenbank';
+  $('aOther').hidden = step === 'aLogin'; $('aSkip').hidden = step !== 'aLogin';
+  const f = {aLogin: $('cloudMail').value ? 'cloudPw' : 'cloudMail', aEnroll: 'aEnrollCode', aMfa: 'aMfaCode', aDenied: 'aRetry'}[step];
+  setTimeout(() => $(f) && $(f).focus(), 30);
+}
+const jwtAal = t => { try { return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).aal || 'aal1'; } catch(e){ return 'aal1'; } };
+async function authState(session, force){
+  const u = session ? session.user : null;
+  const key = u ? u.id + '|' + jwtAal(session.access_token) : '';
+  if (!force && key === authKey) return; authKey = key;
+  if (!u) { authFactor = null; cloudUser(null); let skip = false; try { skip = sessionStorage.getItem('pm_skipauth') === '1'; } catch(e){} authShow(skip ? null : 'aLogin'); return; }
+  if (SBU && SBU.id !== u.id) cloudUser(null);
+  const sub = u.email;
+  try {
+    const { data: lv, error: e1 } = await SB.auth.mfa.getAuthenticatorAssuranceLevel(); if (e1) throw e1;
+    if (lv.currentLevel !== 'aal2') {
+      if (SBU) cloudUser(null);
+      const { data: fs, error: e2 } = await SB.auth.mfa.listFactors(); if (e2) throw e2;
+      const ok = (fs.totp || []).find(f => f.status === 'verified');
+      if (ok) { authFactor = ok.id; $('aMfaCode').value = ''; authShow('aMfa', sub); return; }
+      for (const f of (fs.all || []).filter(f => f.factor_type === 'totp' && f.status !== 'verified')) await SB.auth.mfa.unenroll({factorId: f.id});
+      const { data: en, error: e3 } = await SB.auth.mfa.enroll({factorType: 'totp', friendlyName: 'Authenticator ' + new Date().toISOString().slice(0, 16)}); if (e3) throw e3;
+      authFactor = en.id; $('aQr').src = en.totp.qr_code; $('aSecret').textContent = en.totp.secret.replace(/(.{4})/g, '$1 ').trim(); $('aEnrollCode').value = '';
+      authMsg(''); authShow('aEnroll', sub); return;
+    }
+    const { data: m, error: e4 } = await SB.rpc('ist_mitglied'); if (e4) throw e4;
+    if (!m) { if (SBU) cloudUser(null); $('aDeniedMail').textContent = u.email; authMsg(''); authShow('aDenied', sub);
+      cloudSt('Datenbank: kein Zugriff', 'err', 'Konto ist nicht freigeschaltet. Es wird nur lokal gespeichert.'); return; }
+    authMsg(''); authShow(null);
+    if (!SBU || SBU.id !== u.id) cloudUser(u);
+  } catch(e){ authMsg('Fehler: ' + (e.message || e), 'err'); }
+}
+async function authCode(input){
+  const code = input.value.replace(/\D/g, ''); if (code.length !== 6) { authMsg('Bitte 6 Ziffern eingeben.', 'err'); return; }
+  if (authBusy) return; authBusy = true; authMsg('Prüfe Code …');
+  const { error } = await SB.auth.mfa.challengeAndVerify({factorId: authFactor, code});
+  authBusy = false;
+  if (error) { input.value = ''; input.focus(); authMsg(/invalid|expired/i.test(error.message) ? 'Code falsch oder abgelaufen – bitte den aktuellen Code eingeben.' : error.message, 'err'); return; }
+  authMsg('');
+  const { data } = await SB.auth.getSession(); await authState(data.session, true);
+}
 async function cloudInit(){
-  if (!window.supabase || !window.supabase.createClient) { cloudSt('Datenbank: nicht erreichbar', 'err', 'Die Datenbank-Bibliothek wurde nicht geladen. Es wird nur lokal gespeichert.'); $('cloudIn').hidden = true; return; }
+  if (!window.supabase || !window.supabase.createClient) { cloudSt('Datenbank: nicht erreichbar', 'err', 'Die Datenbank-Bibliothek wurde nicht geladen. Es wird nur lokal gespeichert.'); $('cloudOpen').hidden = true; return; }
   SB = window.supabase.createClient(SB_URL, SB_KEY);
-  const pw = () => ({email: $('cloudMail').value.trim(), password: $('cloudPw').value});
-  $('cloudIn').addEventListener('submit', async e => { e.preventDefault(); cloudSt('Datenbank: Anmeldung …', 'busy', '');
-    const { error } = await SB.auth.signInWithPassword(pw());
-    if (error) cloudSt('Datenbank: nicht angemeldet', 'err', error.message === 'Invalid login credentials' ? 'E-Mail oder Passwort falsch.' : error.message === 'Email not confirmed' ? 'E-Mail noch nicht bestätigt – bitte den Link in der Bestätigungsmail öffnen.' : error.message); });
-  $('cloudReg').addEventListener('click', async () => { if (!$('cloudIn').reportValidity()) return;
-    const { data, error } = await SB.auth.signUp(pw());
-    if (error) { cloudSt('Datenbank: nicht angemeldet', 'err', error.message); return; }
-    if (!data.session) $('cloudMsg').textContent = 'Konto angelegt. Bitte die Bestätigungsmail öffnen und danach anmelden.'; });
+  const pw = () => ({email: $('cloudMail').value.trim().toLowerCase(), password: $('cloudPw').value});
+  $('aLogin').addEventListener('submit', async e => { e.preventDefault(); if (authBusy) return; authBusy = true; authMsg('Anmeldung …');
+    const { error } = await SB.auth.signInWithPassword(pw()); authBusy = false;
+    if (error) authMsg(error.message === 'Invalid login credentials' ? 'E-Mail oder Passwort falsch.' : error.message === 'Email not confirmed' ? 'E-Mail noch nicht bestätigt – bitte den Link in der Bestätigungsmail öffnen.' : error.message, 'err');
+    else $('cloudPw').value = ''; });
+  $('cloudReg').addEventListener('click', async () => { if (!$('aLogin').reportValidity()) return; authMsg('Konto wird angelegt …');
+    const opt = location.protocol === 'https:' ? {emailRedirectTo: location.origin + location.pathname} : {};
+    const { data, error } = await SB.auth.signUp({...pw(), options: opt});
+    if (error) { authMsg(/least|weak|short/i.test(error.message) ? 'Passwort zu schwach – bitte mindestens 8 Zeichen.' : error.message, 'err'); return; }
+    if (!data.session) authMsg('Konto angelegt. Bitte die Bestätigungsmail öffnen und danach hier anmelden.', 'ok'); });
+  $('aEnroll').addEventListener('submit', e => { e.preventDefault(); authCode($('aEnrollCode')); });
+  $('aMfa').addEventListener('submit', e => { e.preventDefault(); authCode($('aMfaCode')); });
+  for (const id of ['aEnrollCode', 'aMfaCode']) $(id).addEventListener('input', e => { const v = e.target.value.replace(/\D/g, '').slice(0, 6); e.target.value = v; if (v.length === 6) e.target.form.requestSubmit(); });
+  $('aRetry').addEventListener('click', async () => { const { data } = await SB.auth.getSession(); authState(data.session, true); });
+  $('aOther').addEventListener('click', async () => { authMsg(''); await SB.auth.signOut(); });
+  $('aSkip').addEventListener('click', () => { try { sessionStorage.setItem('pm_skipauth', '1'); } catch(e){} authMsg(''); authShow(null); });
+  $('cloudOpen').addEventListener('click', async () => { try { sessionStorage.removeItem('pm_skipauth'); } catch(e){} const { data } = await SB.auth.getSession(); authKey = null; authState(data.session, true); if (!data.session) authShow('aLogin'); });
   $('cloudLogout').addEventListener('click', async () => { clearTimeout(syncT); await cloudSync(); await SB.auth.signOut(); });
   $('cloudLoad').addEventListener('click', cloudLoad);
-  let last = undefined;
-  SB.auth.onAuthStateChange((ev, session) => { const u = session ? session.user : null; if ((u && u.id) === (last && last.id)) return; last = u; setTimeout(() => cloudUser(u)); });
-  const { data } = await SB.auth.getSession(); if (!data.session) cloudUser(null);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('auth').hidden && !$('aLogin').hidden) $('aSkip').click(); });
+  SB.auth.onAuthStateChange((ev, session) => { setTimeout(() => authState(session)); });
 }
 
 start();

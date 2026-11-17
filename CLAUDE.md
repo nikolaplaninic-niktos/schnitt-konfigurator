@@ -18,20 +18,27 @@ Test project for Nikola Planinic and a friend: how a shared database works for t
   - `projekte`: `id` text (app id), `data` jsonb (project fields `p_*`, `wz`, `gh`), generated `name/auftragsnr/kunde`, `sort`.
   - `positionen`: PK (`projekt_id`, `idx`), `data` jsonb (~117 form fields), generated `bezeichnung/einbauort/stueck/breite_mm/hoehe_mm/aufteilung`.
   - `bibliothek`: key `schienen` | `produkte`, `data` jsonb array.
-  - Trigger `touch_updated` sets `updated_at/updated_by`. RLS: only `authenticated`, everyone signed in shares everything (team). `anon` has no access.
+  - Trigger `touch_updated` sets `updated_at/updated_by`. RLS: only `authenticated`, members share everything (team). `anon` has no access.
+  - `mitglieder` (email, name): allowlist, no client policies (edit via dashboard/SQL). `ist_mitglied()` (security definer, confirmed email in list).
+    Restrictive policy "Nur Mitglieder mit 2FA" on all 3 tables: `aal = 'aal2'` AND `ist_mitglied()`. Advisor warnings for this are intentional.
+  - Lost authenticator: `delete from auth.mfa_factors where user_id = (select id from auth.users where email = '…')` → user enrolls again at next login.
 - App sync (search `// ---- Datenbank (Supabase)` in `index.html`):
   - `dbStore()` → `cloudQueue()` (1.2 s debounce) → `cloudSync()`: upsert projects + positions, delete positions with `idx >= length`,
     delete only projects explicitly removed in this browser (`cloudGone`) – never other users' new projects.
+  - Login mask `#auth` (search `// ---- Anmeldemaske`): `authState()` → password → no factor: enroll TOTP (QR + secret) / factor: code → aal2 →
+    `rpc('ist_mitglied')` → not member: "Kein Zugriff" step. "Ohne Anmeldung weiter" = local only (sessionStorage flag).
   - `cloudLoad()` after login: loads everything; non-empty local-only projects are uploaded.
   - `storeRails/storeLib` → `cloudLibQueue()`.
   - Without login: localStorage only. Same position edited by two people → last save wins.
 
 ## Testing
 - Playwright/Chromium is preinstalled. Cloud environment `schnitt-konfigurator` allows the Supabase host, jsDelivr, cdnjs and Google Fonts.
-- Test user: create via SQL (insert into `auth.users` + `auth.identities`, password via `extensions.crypt`), **delete it and its data afterwards**.
-- Check: wrong password message, login → "Datenbank: verbunden", edit → saved, second browser context sees the data, 390 px without horizontal overflow, no console errors.
+- Test user: create via SQL, add to `mitglieder`; TOTP code in test computed from the shown secret (HMAC-SHA1, 30 s). Create (insert into `auth.users` + `auth.identities`, password via `extensions.crypt`), **delete it and its data afterwards**.
+- Check: wrong password + wrong code message, enroll → 2nd context asks code, non-member gets "Kein Zugriff", login → "Datenbank: verbunden", edit → saved, second browser context sees the data, 390 px without horizontal overflow, no console errors.
 
 ## Status (17.11.2026)
-- Pushed to `main`, DB empty and ready. Nikola + friend register in the app (email confirmation by Supabase mail).
-- Open ideas: GitHub Pages for a shareable link, Supabase Realtime instead of "Neu laden", member allowlist table for RLS,
+- Allowlist + mandatory authenticator (2FA) live. `mitglieder`: Nikola only so far – friend's email still to add.
+- GitHub Pages: repo is **private** → Pages needs public repo (or GitHub Pro). Nikola enables it in Settings → Pages (branch `main`, `/`);
+  URL then `https://nikolaplaninic-niktos.github.io/schnitt-konfigurator/`. Set Supabase Auth → URL Configuration → Site URL to it.
+- Open ideas: Supabase Realtime instead of "Neu laden", password reset ("Passwort vergessen"),
   disable "Confirm email" if the built-in mail limit blocks sign-ups.
