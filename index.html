@@ -2798,7 +2798,7 @@ async function cloudInit(){
     const opt = location.protocol === 'https:' ? {emailRedirectTo: location.origin + location.pathname} : {};
     const { data, error } = await SB.auth.signUp({email, password: $('regPw').value, options: opt});
     authBusy = false; $('auth').classList.remove('busy');
-    if (error) { authMsg(/least|weak|short/i.test(error.message) ? 'Passwort zu schwach – bitte mindestens 8 Zeichen.' : /database error|not allowed|freigeschaltet/i.test(error.message) ? 'Diese E-Mail-Adresse ist nicht freigeschaltet. Bitte beim Administrator melden.' : /rate limit/i.test(error.message) ? 'Zu viele Versuche – bitte in ein paar Minuten erneut probieren.' : error.message, 'err'); return; }
+    if (error) { authMsg(/least|weak|short/i.test(error.message) ? 'Passwort zu schwach – bitte mindestens 8 Zeichen.' : /database error|not allowed|freigeschaltet/i.test(error.message) ? 'Diese E-Mail-Adresse ist nicht freigeschaltet. Bitte beim Administrator melden.' : /rate limit/i.test(error.message) ? 'Zu viele Versuche – bitte in ein paar Minuten erneut probieren.' : /sending confirmation/i.test(error.message) ? 'Die Bestätigungsmail konnte nicht gesendet werden. Bitte später erneut versuchen oder beim Administrator melden.' : error.message, 'err'); return; }
     $('regPw').value = $('regPw2').value = '';
     if (!data.session) { $('regDoneMail').textContent = email; authMsg(''); authShow('aRegDone'); } });
   $('aEnroll').addEventListener('submit', e => { e.preventDefault(); authCode($('aEnrollCode')); });
