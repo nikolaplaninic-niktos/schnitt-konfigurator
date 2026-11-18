@@ -253,7 +253,7 @@ output.out.bad{color:var(--bad);border-color:var(--bad)}
 details.mini summary{cursor:pointer;color:var(--accent);font-size:13px;font-weight:500}
 details.mini[open]{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:4px;padding:10px}
 .btns{display:flex;flex-wrap:wrap;gap:8px}
-.out{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.out.panel{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
 .tabs{padding:10px 12px;border-bottom:1px solid var(--line)}
 .tabs .seg{max-width:520px}
 .sheet{background:var(--paper);overflow-x:auto}
@@ -275,7 +275,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .kd div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dotted var(--line);padding-block:2px}
 .kd dt{color:var(--muted)} .kd dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
 footer{color:var(--muted);font-size:12px}
-@media (max-width:880px){ .grid{grid-template-columns:minmax(0,1fr)} .out{position:static;order:-1} .sheet svg{max-height:none} }
+@media (max-width:880px){ .grid{grid-template-columns:minmax(0,1fr)} .out.panel{position:static;order:-1} .sheet svg{max-height:none} }
 /* Bis die Anmeldung geprüft ist: Seite unsichtbar, nur die Maske darf erscheinen */
 html.ab body{visibility:hidden}
 html.ab #auth{visibility:visible}
@@ -514,7 +514,7 @@ html.ab #auth{visibility:visible}
             <div class="fld"><label for="kl"><i style="background:var(--m-kl)"></i>Kleber</label><div class="num"><input id="kl" type="number" value="10" min="0" max="40" step="1"><span>mm</span></div></div>
             <div class="fld"><label for="mw"><i style="background:var(--m-mw)"></i>Mauerwerk</label><div class="num"><input id="mw" type="number" value="240" min="100" max="600" step="5"><span>mm</span></div></div>
             <div class="fld"><label for="ip"><i style="background:var(--m-pu)"></i>Innenputz</label><div class="num"><input id="ip" type="number" value="15" min="0" max="60" step="1"><span>mm</span></div></div>
-            <div class="fld tot"><label>Gesamt</label><output id="wandSum">455 mm</output></div>
+            <div class="fld tot"><label for="wandSum">Gesamt</label><output id="wandSum">455 mm</output></div>
           </div>
         </div>
       </details>
@@ -671,7 +671,7 @@ html.ab #auth{visibility:visible}
           <div class="fld wide" id="befPRow"><label for="befP">Produkt</label><select id="befP"></select></div>
           <div class="fields" id="befLRow">
             <div class="fld"><label for="befL">Länge</label><div class="num"><input id="befL" type="number" value="132" min="40" max="400" step="2"><span>mm</span></div></div>
-            <div class="fld"><label>Einbindetiefe Mauerwerk</label><output class="out" id="befE">–</output></div>
+            <div class="fld"><label for="befE">Einbindetiefe Mauerwerk</label><output class="out" id="befE">–</output></div>
           </div>
           <div class="grp" id="befBoden">
             <div class="sh">Boden (bodentief)</div>
@@ -681,12 +681,12 @@ html.ab #auth{visibility:visible}
               <div class="fld wide"><label for="bwS">Schraube in RVB</label><select id="bwS"></select></div>
               <div class="fields">
                 <div class="fld"><label for="bwSL">Schraubenlänge</label><div class="num"><input id="bwSL" type="number" value="40" min="10" max="200" step="1"><span>mm</span></div></div>
-                <div class="fld"><label>Einschraubtiefe RVB</label><output class="out" id="bwSE">–</output></div>
+                <div class="fld"><label for="bwSE">Einschraubtiefe RVB</label><output class="out" id="bwSE">–</output></div>
               </div>
               <div class="fld wide"><label for="bwD">Dübel in Betondecke</label><select id="bwD"></select></div>
               <div class="fields">
                 <div class="fld"><label for="bwDL">Dübellänge</label><div class="num"><input id="bwDL" type="number" value="60" min="20" max="200" step="5"><span>mm</span></div></div>
-                <div class="fld"><label>Einbindetiefe Decke</label><output class="out" id="bwDE">–</output></div>
+                <div class="fld"><label for="bwDE">Einbindetiefe Decke</label><output class="out" id="bwDE">–</output></div>
               </div>
             </div>
           </div>
@@ -702,7 +702,7 @@ html.ab #auth{visibility:visible}
             <div class="fld"><label for="gh">Gebäudehöhe</label><div class="num"><input id="gh" type="number" value="8" min="1" max="25" step="0.5"><span>m</span></div></div>
             <div class="fld wide"><label for="wb">Lage am Gebäude</label><select id="wb"><option value="A">Bereich A, Randbereich (Sog, cpe,10 = −1,2)</option><option value="B">Bereich B, Wandfläche (Sog, cpe,10 = −0,8)</option><option value="D">Bereich D, Luvseite (Druck, cpe,10 = +0,8)</option></select></div>
             <div class="fld"><label for="gq">Teilsicherheit γQ</label><div class="num"><input id="gq" type="number" value="1.5" min="1" max="2" step="0.05"><span>–</span></div></div>
-            <div class="fld"><label>Winddruck w<sub>k</sub> / w<sub>d</sub></label><output class="out" id="wOut">–</output></div>
+            <div class="fld"><label for="wOut">Winddruck w<sub>k</sub> / w<sub>d</sub></label><output class="out" id="wOut">–</output></div>
           </div>
           <label class="chk"><input type="checkbox" id="wman">Windlast w<sub>k</sub> manuell vorgeben</label>
           <div class="sub fields" id="wmanSub" hidden>
