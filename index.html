@@ -330,6 +330,24 @@ footer{color:var(--muted);font-size:12px}
         <button type="button" id="cloudReg" class="wide">Neues Konto registrieren</button>
       </form>
 
+      <form id="aRegister" class="astep" hidden autocomplete="on">
+        <p class="ahint">Registrieren können sich nur freigeschaltete Team-Mitglieder. Bitte die E-Mail-Adresse verwenden, die der Administrator freigegeben hat.</p>
+        <label>E-Mail<input type="email" id="regMail" autocomplete="username" required></label>
+        <label>Passwort<input type="password" id="regPw" autocomplete="new-password" required minlength="8" placeholder="mindestens 8 Zeichen"></label>
+        <label>Passwort wiederholen<input type="password" id="regPw2" autocomplete="new-password" required minlength="8"></label>
+        <button type="submit" class="pri wide">Konto anlegen</button>
+        <button type="button" id="regBack" class="wide">Zurück zur Anmeldung</button>
+      </form>
+
+      <div id="aRegDone" class="astep" hidden>
+        <ol class="ahelp">
+          <li>Wir haben eine Bestätigungsmail an <b id="regDoneMail"></b> gesendet.</li>
+          <li>Den Link in der E-Mail öffnen (ggf. im Spam-Ordner nachsehen).</li>
+          <li>Danach anmelden und den Authenticator einrichten.</li>
+        </ol>
+        <button type="button" id="regToLogin" class="pri wide">Zur Anmeldung</button>
+      </div>
+
       <form id="aEnroll" class="astep" hidden autocomplete="off">
         <ol class="ahelp">
           <li>Authenticator-App öffnen (z.&nbsp;B. Google Authenticator, Microsoft Authenticator, 1Password).</li>
@@ -2713,15 +2731,16 @@ function authOpen(on){
 function authShow(step, sub){
   authOpen(!!step);
   if (!step) return;
-  for (const id of ['aLogin', 'aEnroll', 'aMfa', 'aDenied']) {
+  for (const id of ['aLogin', 'aRegister', 'aRegDone', 'aEnroll', 'aMfa', 'aDenied']) {
     const on = id === step, el = $(id);
     if (on && el.hidden && $('auth').classList.contains('in')) { el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter'); }
     el.hidden = !on;
   }
-  $('authH').textContent = {aLogin: 'Anmeldung', aEnroll: 'Authenticator einrichten', aMfa: 'Zwei-Faktor-Bestätigung', aDenied: 'Kein Zugriff'}[step];
+  $('authH').textContent = {aLogin: 'Anmeldung', aRegister: 'Konto registrieren', aRegDone: 'Fast geschafft', aEnroll: 'Authenticator einrichten', aMfa: 'Zwei-Faktor-Bestätigung', aDenied: 'Kein Zugriff'}[step];
   $('authSub').textContent = sub || 'Projekt & Montagestatik · Team-Datenbank';
-  $('aOther').hidden = step === 'aLogin'; $('aSkip').hidden = step !== 'aLogin';
-  const f = {aLogin: $('cloudMail').value ? 'cloudPw' : 'cloudMail', aEnroll: 'aEnrollCode', aMfa: 'aMfaCode', aDenied: 'aRetry'}[step];
+  const pre = step === 'aLogin' || step === 'aRegister' || step === 'aRegDone';
+  $('aOther').hidden = pre; $('aSkip').hidden = step !== 'aLogin';
+  const f = {aLogin: $('cloudMail').value ? 'cloudPw' : 'cloudMail', aRegister: $('regMail').value ? 'regPw' : 'regMail', aRegDone: 'regToLogin', aEnroll: 'aEnrollCode', aMfa: 'aMfaCode', aDenied: 'aRetry'}[step];
   setTimeout(() => $(f) && $(f).focus(), 30);
 }
 const jwtAal = t => { try { return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).aal || 'aal1'; } catch(e){ return 'aal1'; } };
@@ -2740,7 +2759,7 @@ async function authState(session, force){
       const ok = (fs.totp || []).find(f => f.status === 'verified');
       if (ok) { authFactor = ok.id; $('aMfaCode').value = ''; authShow('aMfa', sub); return; }
       for (const f of (fs.all || []).filter(f => f.factor_type === 'totp' && f.status !== 'verified')) await SB.auth.mfa.unenroll({factorId: f.id});
-      const { data: en, error: e3 } = await SB.auth.mfa.enroll({factorType: 'totp', friendlyName: 'Authenticator ' + new Date().toISOString().slice(0, 16)}); if (e3) throw e3;
+      const { data: en, error: e3 } = await SB.auth.mfa.enroll({factorType: 'totp', issuer: 'SJ Montage Konfigurator TEST', friendlyName: 'Authenticator ' + new Date().toISOString().slice(0, 16)}); if (e3) throw e3;
       authFactor = en.id; $('aQr').src = en.totp.qr_code; $('aSecret').textContent = en.totp.secret.replace(/(.{4})/g, '$1 ').trim(); $('aEnrollCode').value = '';
       authMsg(''); authShow('aEnroll', sub); return;
     }
@@ -2768,11 +2787,20 @@ async function cloudInit(){
     const { error } = await SB.auth.signInWithPassword(pw()); authBusy = false; $('auth').classList.remove('busy');
     if (error) authMsg(error.message === 'Invalid login credentials' ? 'E-Mail oder Passwort falsch.' : error.message === 'Email not confirmed' ? 'E-Mail noch nicht bestätigt – bitte den Link in der Bestätigungsmail öffnen.' : error.message, 'err');
     else $('cloudPw').value = ''; });
-  $('cloudReg').addEventListener('click', async () => { if (!$('aLogin').reportValidity()) return; authMsg('Konto wird angelegt …');
+  $('cloudReg').addEventListener('click', () => { authMsg(''); if (!$('regMail').value) $('regMail').value = $('cloudMail').value.trim(); $('regPw').value = $('regPw2').value = ''; authShow('aRegister'); });
+  $('regBack').addEventListener('click', () => { authMsg(''); authShow('aLogin'); });
+  $('regToLogin').addEventListener('click', () => { authMsg(''); $('cloudMail').value = $('regMail').value.trim(); $('cloudPw').value = ''; authShow('aLogin'); });
+  $('regPw2').addEventListener('input', () => $('regPw2').setCustomValidity(''));
+  $('aRegister').addEventListener('submit', async e => { e.preventDefault(); if (authBusy) return;
+    if ($('regPw').value !== $('regPw2').value) { $('regPw2').setCustomValidity('Passwörter stimmen nicht überein.'); $('regPw2').reportValidity(); authMsg('Die beiden Passwörter stimmen nicht überein.', 'err'); return; }
+    const email = $('regMail').value.trim().toLowerCase();
+    authBusy = true; authMsg('Konto wird angelegt …'); $('auth').classList.add('busy');
     const opt = location.protocol === 'https:' ? {emailRedirectTo: location.origin + location.pathname} : {};
-    const { data, error } = await SB.auth.signUp({...pw(), options: opt});
-    if (error) { authMsg(/least|weak|short/i.test(error.message) ? 'Passwort zu schwach – bitte mindestens 8 Zeichen.' : error.message, 'err'); return; }
-    if (!data.session) authMsg('Konto angelegt. Bitte die Bestätigungsmail öffnen und danach hier anmelden.', 'ok'); });
+    const { data, error } = await SB.auth.signUp({email, password: $('regPw').value, options: opt});
+    authBusy = false; $('auth').classList.remove('busy');
+    if (error) { authMsg(/least|weak|short/i.test(error.message) ? 'Passwort zu schwach – bitte mindestens 8 Zeichen.' : /database error|not allowed|freigeschaltet/i.test(error.message) ? 'Diese E-Mail-Adresse ist nicht freigeschaltet. Bitte beim Administrator melden.' : /rate limit/i.test(error.message) ? 'Zu viele Versuche – bitte in ein paar Minuten erneut probieren.' : error.message, 'err'); return; }
+    $('regPw').value = $('regPw2').value = '';
+    if (!data.session) { $('regDoneMail').textContent = email; authMsg(''); authShow('aRegDone'); } });
   $('aEnroll').addEventListener('submit', e => { e.preventDefault(); authCode($('aEnrollCode')); });
   $('aMfa').addEventListener('submit', e => { e.preventDefault(); authCode($('aMfaCode')); });
   for (const id of ['aEnrollCode', 'aMfaCode']) $(id).addEventListener('input', e => { const v = e.target.value.replace(/\D/g, '').slice(0, 6); e.target.value = v; if (v.length === 6) e.target.form.requestSubmit(); });
