@@ -276,7 +276,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .kd dt{color:var(--muted)} .kd dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
 footer{color:var(--muted);font-size:12px}
 @media (max-width:880px){ .grid{grid-template-columns:minmax(0,1fr)} .out{position:static;order:-1} .sheet svg{max-height:none} }
+/* Bis die Anmeldung geprüft ist: Seite unsichtbar, nur die Maske darf erscheinen */
+html.ab body{visibility:hidden}
+html.ab #auth{visibility:visible}
 </style>
+<script>document.documentElement.classList.add('ab');setTimeout(function(){var a=document.getElementById('auth');if(!a||a.hidden)document.documentElement.classList.remove('ab')},8000);</script>
 </head>
 <body>
 <div class="wrap">
@@ -2723,6 +2727,7 @@ function authOpen(on){
     el.classList.remove('out'); el.hidden = false; document.body.style.overflow = 'hidden';
     void el.offsetWidth; el.classList.add('in');
   } else {
+    document.documentElement.classList.remove('ab');
     if (el.hidden) return;
     el.classList.add('out'); document.body.style.overflow = '';
     authT = setTimeout(() => { el.hidden = true; el.classList.remove('in', 'out', 'busy'); }, 700);
@@ -2780,7 +2785,7 @@ async function authCode(input){
   const { data } = await SB.auth.getSession(); await authState(data.session, true);
 }
 async function cloudInit(){
-  if (!window.supabase || !window.supabase.createClient) { cloudSt('Datenbank: nicht erreichbar', 'err', 'Die Datenbank-Bibliothek wurde nicht geladen. Es wird nur lokal gespeichert.'); $('cloudOpen').hidden = true; return; }
+  if (!window.supabase || !window.supabase.createClient) { document.documentElement.classList.remove('ab'); cloudSt('Datenbank: nicht erreichbar', 'err', 'Die Datenbank-Bibliothek wurde nicht geladen. Es wird nur lokal gespeichert.'); $('cloudOpen').hidden = true; return; }
   SB = window.supabase.createClient(SB_URL, SB_KEY);
   const pw = () => ({email: $('cloudMail').value.trim().toLowerCase(), password: $('cloudPw').value});
   $('aLogin').addEventListener('submit', async e => { e.preventDefault(); if (authBusy) return; authBusy = true; authMsg('Anmeldung …'); $('auth').classList.add('busy');
